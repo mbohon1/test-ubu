@@ -1,6 +1,3 @@
-Dưới đây là phiên bản script của bạn đã được chuyển đổi để sử dụng trên Ubuntu:
-
-```sh
 #!/bin/sh
 
 random() {
@@ -122,6 +119,3 @@ bash /etc/rc.local
 gen_proxy_file_for_user
 
 upload_proxy
-```
-
-Nếu bạn cần thêm thông tin hoặc có câu hỏi khác, hãy cho tôi biết nhé!
