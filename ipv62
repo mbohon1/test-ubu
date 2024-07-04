@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Cấu hình
+GIAO_DIEN="eth0" # Tên giao diện mạng
+MANG_CON="2001:19f0:b800:1c47" # Tiền tố mạng con /64 của bạn
+BAT_DAU=1 # Số bắt đầu cho đoạn cuối của địa chỉ IPv6
+KET_THUC=10 # Số lượng proxy cần tạo
+PORT_BAT_DAU=3000 # Số cổng bắt đầu
+
+# Tập tin cấu hình để lưu địa chỉ IPv6 và cổng
+TAP_TIN_CAU_HINH="proxy_config.txt"
+
+# Xóa tập tin cấu hình cũ nếu tồn tại
+rm -f $TAP_TIN_CAU_HINH
+
+# Hàm để tạo địa chỉ IPv6
+tao_ipv6() {
+    local duoi=$(printf "%x" $1)
+    echo "${MANG_CON}::${duoi}"
+}
+
+# Vòng lặp để tạo nhiều proxy
+for ((i=BAT_DAU; i<=KET_THUC; i++)); do
+    DIA_CHI_IPV6=$(tao_ipv6 $i)
+    PORT=$((PORT_BAT_DAU + i - 1))
+    echo "Tạo proxy với địa chỉ IPv6: $DIA_CHI_IPV6 và cổng: $PORT"
+    
+    # Thêm địa chỉ IPv6 vào giao diện mạng
+    ip -6 addr add $DIA_CHI_IPV6/64 dev $GIAO_DIEN
+    
+    # Lưu cấu hình vào tập tin
+    echo "$DIA_CHI_IPV6:$PORT" >> $TAP_TIN_CAU_HINH
+    
+    # Tùy chọn: Thêm quy tắc NAT (nếu cần)
+    # ip6tables -t nat -A POSTROUTING -s $DIA_CHI_IPV6 -j MASQUERADE
+    
+    # Tùy chọn: Thêm quy tắc để cho phép chuyển tiếp (nếu cần)
+    # ip6tables -A FORWARD -s $DIA_CHI_IPV6 -j ACCEPT
+done
+
+echo "Đã tạo thành công các proxy IPv6. Cấu hình đã được lưu trong tệp tin $TAP_TIN_CAU_HINH."
